@@ -40,6 +40,8 @@ class DashboardPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
+                \App\Filament\Widgets\DisponibilidadOverview::class,
+                \App\Filament\Widgets\EquiposAsignadosTable::class,
             ])
             ->middleware([
                 EncryptCookies::class,
