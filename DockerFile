@@ -1,0 +1,47 @@
+FROM php:8.4-fpm-alpine
+
+# Instalar dependencias del sistema
+RUN apk add --no-cache \
+    nginx \
+    nodejs \
+    npm \
+    postgresql-dev \
+    libzip-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    curl
+
+# Instalar extensiones PHP
+RUN docker-php-ext-install \
+    pdo_pgsql \
+    pgsql \
+    mbstring \
+    xml \
+    zip \
+    pcntl \
+    bcmath
+
+# Instalar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /app
+
+# Copiar archivos
+COPY . .
+
+# Instalar dependencias PHP
+RUN composer install --no-dev --optimize-autoloader
+
+# Instalar dependencias JS y compilar
+RUN npm ci && npm run build
+
+# Configurar nginx
+RUN mkdir -p /etc/nginx/http.d
+COPY docker/nginx.conf /etc/nginx/http.d/default.conf
+
+# Permisos
+RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
+
+EXPOSE 3000
+
+CMD ["sh", "-c", "php artisan migrate --force && php artisan config:cache && php-fpm -D && nginx -g 'daemon off;'"]
