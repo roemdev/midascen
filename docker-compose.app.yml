@@ -1,0 +1,33 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: midascen_app
+    environment:
+      APP_NAME: "Midascen"
+      APP_ENV: production
+      APP_DEBUG: false
+      APP_URL: "http://midascen.local"
+      APP_KEY: "base64:tu_app_key_aqui"
+      DB_CONNECTION: pgsql
+      DB_HOST: midascen_db
+      DB_PORT: 5432
+      DB_DATABASE: midascen
+      DB_USERNAME: midascen
+      DB_PASSWORD: tu_password_aqui
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+    ports:
+      - "127.0.0.1:80:80"
+    networks:
+      - midascen_network
+    restart: unless-stopped
+    depends_on:
+      - db
+
+networks:
+  midascen_network:
+    external: true
+    name: midascen_network

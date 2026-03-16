@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: midascen_db
+    environment:
+      POSTGRES_DB: midascen
+      POSTGRES_USER: midascen
+      POSTGRES_PASSWORD: tu_password_aqui
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - midascen_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U midascen"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+
+networks:
+  midascen_network:
+    driver: bridge
+    name: midascen_network
