@@ -1,0 +1,44 @@
+FROM php:8.4-fpm
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    zip \
+    unzip \
+    libpq-dev \
+    libzip-dev \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libicu-dev
+
+# Extensiones PHP necesarias para Laravel + PostgreSQL.
+RUN docker-php-ext-install \
+    pdo \
+    pdo_pgsql \
+    pgsql \
+    zip \
+    gd \
+    intl \
+    bcmath \
+    exif \
+    pcntl
+
+# Instalar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Directorio de trabajo
+WORKDIR /var/www
+
+# Copiar archivos
+COPY . .
+
+# Instalar dependencias Laravel
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# Permisos (muy importante)
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 775 storage bootstrap/cache
+
+CMD ["php-fpm"]
