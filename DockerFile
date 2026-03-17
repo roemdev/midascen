@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libicu-dev
 
-# Extensiones PHP necesarias para Laravel + PostgreSQL
+# Extensiones PHP necesarias para Laravel + PostgreSQL.
 RUN docker-php-ext-install \
     pdo \
     pdo_pgsql \
