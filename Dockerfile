@@ -11,9 +11,13 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    libicu-dev
+    libicu-dev \
+    nodejs \
+    npm \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Extensiones PHP necesarias para Laravel + PostgreSQL.
+# Extensiones PHP necesarias para Laravel + PostgreSQL
 RUN docker-php-ext-install \
     pdo \
     pdo_pgsql \
@@ -23,7 +27,10 @@ RUN docker-php-ext-install \
     intl \
     bcmath \
     exif \
-    pcntl
+    pcntl \
+    mbstring \
+    xml \
+    opcache
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -34,10 +41,13 @@ WORKDIR /var/www
 # Copiar archivos
 COPY . .
 
-# Instalar dependencias Laravel
+# Instalar dependencias PHP
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Permisos (muy importante)
+# Compilar assets
+RUN npm ci && npm run build
+
+# Permisos
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 storage bootstrap/cache
 
