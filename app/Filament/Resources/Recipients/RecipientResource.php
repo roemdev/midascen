@@ -4,10 +4,13 @@ namespace App\Filament\Resources\Recipients;
 
 use App\Filament\Resources\Recipients\Pages;
 use App\Models\Recipient;
+use App\Models\Category;
+use App\Models\RecipientCategoryException;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
@@ -16,6 +19,8 @@ use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 
 class RecipientResource extends Resource
 {
@@ -111,6 +116,35 @@ class RecipientResource extends Resource
                     ->placeholder('Todos'),
             ])
             ->actions([
+                Action::make('excepciones')
+                    ->label('Excepciones')
+                    ->icon('heroicon-o-adjustments-horizontal')
+                    ->color('warning')
+                    ->fillForm(fn ($record) => [
+                        'categorias' => $record->exceptionCategories()->pluck('id')->toArray(),
+                    ])
+                    ->form([
+                        CheckboxList::make('categorias')
+                            ->label('Categorías con excepción')
+                            ->helperText('El ejecutivo podrá recibir múltiples equipos de las categorías seleccionadas.')
+                            ->options(Category::pluck('nombre', 'id'))
+                            ->columns(2),
+                    ])
+                    ->action(function ($record, array $data) {
+                        RecipientCategoryException::where('recipient_id', $record->id)->delete();
+
+                        foreach ($data['categorias'] as $categoryId) {
+                            RecipientCategoryException::create([
+                                'recipient_id' => $record->id,
+                                'category_id'  => $categoryId,
+                            ]);
+                        }
+
+                        Notification::make()
+                            ->title('Excepciones actualizadas')
+                            ->success()
+                            ->send();
+                    }),
                 EditAction::make()->label('Editar'),
                 DeleteAction::make()->label('Eliminar'),
             ])

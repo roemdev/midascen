@@ -30,4 +30,15 @@ class Recipient extends Model
                     ->where('tipo', 'salida')
                     ->whereNull('fecha_devolucion');
     }
+
+    public function categoryExceptions()
+    {
+        return $this->hasMany(RecipientCategoryException::class);
+    }
+
+    public function exceptionCategories()
+    {
+        return $this->belongsToMany(Category::class, 'recipient_category_exceptions')
+                    ->select('categories.id', 'categories.nombre');
+    }
 }
