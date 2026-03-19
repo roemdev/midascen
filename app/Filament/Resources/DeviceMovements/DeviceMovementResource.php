@@ -10,12 +10,10 @@ use Filament\Schemas\Schema;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -51,7 +49,8 @@ class DeviceMovementResource extends Resource
                 ->live(),
 
             Select::make('device_id')
-                ->label('Equipo')
+                ->label('Equipos')
+                ->multiple() // Permite selección múltiple
                 ->options(function (Get $get) {
                     $tipo = $get('tipo');
                     if (!$tipo) return [];
@@ -73,7 +72,7 @@ class DeviceMovementResource extends Resource
                 ->searchable()
                 ->required()
                 ->live()
-                ->helperText('Solo muestra equipos disponibles para el tipo de movimiento seleccionado'),
+                ->helperText('Puedes seleccionar uno o varios equipos.'),
 
             Select::make('recipient_id')
                 ->label('Ejecutivo destinatario')
@@ -81,8 +80,7 @@ class DeviceMovementResource extends Resource
                 ->searchable()
                 ->preload()
                 ->visible(fn (Get $get): bool => $get('tipo') === 'salida')
-                ->required(fn (Get $get): bool => $get('tipo') === 'salida')
-                ->helperText('Solo requerido en salidas'),
+                ->required(fn (Get $get): bool => $get('tipo') === 'salida'),
 
             DatePicker::make('fecha_entrega')
                 ->label('Fecha de entrega')
@@ -94,18 +92,15 @@ class DeviceMovementResource extends Resource
                 ->label('Fecha de devolución')
                 ->displayFormat('d/m/Y')
                 ->visible(fn (Get $get): bool => $get('tipo') === 'salida')
-                ->helperText('Dejar vacío si la asignación es permanente')
                 ->after('fecha_entrega'),
 
             TextInput::make('motivo')
                 ->label('Motivo')
-                ->maxLength(255)
-                ->placeholder('ej: Asignación corporativa, Devolución por cambio de equipo'),
+                ->maxLength(255),
 
             TextInput::make('referencia')
                 ->label('Referencia')
-                ->maxLength(100)
-                ->placeholder('ej: Factura F-2024-441, Orden OC-001'),
+                ->maxLength(100),
         ]);
     }
 
@@ -128,67 +123,35 @@ class DeviceMovementResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('device.deviceModel.brand.nombre')
-                    ->label('Marca')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('device.deviceModel.nombre')
-                    ->label('Modelo')
-                    ->searchable()
-                    ->sortable(),
+                    ->label('Marca'),
 
                 TextColumn::make('recipient.nombre')
                     ->label('Ejecutivo')
-                    ->searchable()
-                    ->placeholder('—')
-                    ->sortable(),
+                    ->placeholder('—'),
 
                 TextColumn::make('fecha_entrega')
                     ->label('Entrega')
-                    ->date('d/m/Y')
-                    ->sortable(),
-
-                TextColumn::make('fecha_devolucion')
-                    ->label('Devolución')
-                    ->date('d/m/Y')
-                    ->placeholder('Permanente')
-                    ->sortable(),
+                    ->date('d/m/Y'),
 
                 TextColumn::make('user.name')
                     ->label('Registrado por')
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('motivo')
-                    ->label('Motivo')
-                    ->limit(40)
-                    ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('tipo')
-                    ->label('Tipo')
                     ->options([
                         'entrada' => 'Entrada',
                         'salida'  => 'Salida',
                     ]),
-
-                SelectFilter::make('recipient_id')
-                    ->label('Ejecutivo')
-                    ->relationship('recipient', 'nombre')
-                    ->searchable()
-                    ->preload(),
             ])
             ->actions([
                 ViewAction::make()->label('Ver'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->label('Eliminar seleccionados'),
+                    DeleteBulkAction::make(),
                 ]),
             ])
-            ->emptyStateHeading('No hay movimientos registrados')
-            ->emptyStateDescription('Los movimientos se generan al registrar entradas y salidas de equipos.')
             ->defaultSort('created_at', 'desc');
     }
 
