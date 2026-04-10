@@ -1,33 +1,32 @@
 # Midascen - Sistema de Gestión de Dispositivos
 
-Midascen es una aplicación desarrollada en **Laravel 12** con un panel de administración basado en **Filament**. Está diseñada para gestionar el inventario y los movimientos de dispositivos dentro de una organización.
+## ¿Qué hace midascen?
 
-## 🚀 Funciones Principales
+Midascen es una aplicación de gestión de inventario y movimientos de dispositivos diseñada para organizaciones. Permite llevar un control exhaustivo de:
 
-- **Gestión del Inventario:**
-  - Registro de **Dispositivos** con su número de serie, IMEI, condición, y disponibilidad.
-  - Catalogación a través de **Marcas**, **Categorías**, y **Modelos**.
+- **Inventario:** Registro de dispositivos con su número de serie, IMEI, condición, y disponibilidad.
+- **Catalogación:** Organización mediante Marcas, Categorías y Modelos.
+- **Movimientos:** Seguimiento de entradas y salidas de dispositivos para saber qué usuario o destinatario tiene asignado cada equipo.
+- **Administración Inteligente:** Todo gestionado a través de un panel de administración completo e intuitivo basado en Filament.
 
-- **Control de Movimientos:**
-  - Registro de **Movimientos de Dispositivos** (entradas/salidas) para saber quién tiene asignado qué dispositivo.
-  - Asignación a **Destinatarios** y registro de fechas de entrega y devolución.
+## Tecnologías usadas
 
-- **Panel de Administración Inteligente:**
-  - Panel completo para gestionar todos los recursos (Usuarios, Dispositivos, Movimientos, etc.) mediante Filament.
+- **Backend:** Laravel 12 (PHP 8.2+)
+- **Panel de Administración:** Filament v3
+- **Base de Datos:** PostgreSQL (en Docker) / SQLite (por defecto en local sin Docker)
+- **Frontend / Assets:** Vite, Tailwind CSS
+- **Infraestructura:** Docker & Docker Compose (Nginx, App, DB, Queue)
 
-- **Despliegue Sencillo con Docker:**
-  - La aplicación está dockerizada para un fácil despliegue en entornos de desarrollo y producción usando PostgreSQL, Nginx y colas (Queue).
+## Cómo instalarlo y configurarlo
 
-## 📋 Requisitos Previos
+Midascen está preparado para desplegarse fácilmente usando Docker, lo que simplifica la configuración del entorno.
 
-Para desplegar la aplicación fácilmente usando Docker, necesitarás:
-- [Docker](https://docs.docker.com/get-docker/) instalado en tu máquina.
-- [Docker Compose](https://docs.docker.com/compose/install/) instalado en tu máquina.
-- Git (para clonar el repositorio).
+### Requisitos Previos
 
-## 🔧 Cómo clonar y desplegar
+- Git
+- Docker y Docker Compose instalados en tu máquina.
 
-Sigue estos pasos para instalar y poner en marcha el proyecto:
+### Pasos de Instalación (Con Docker)
 
 1. **Clona el repositorio:**
    ```bash
@@ -35,45 +34,47 @@ Sigue estos pasos para instalar y poner en marcha el proyecto:
    cd midascen
    ```
 
-2. **Prepara el entorno Docker:**
-   Copia el archivo de ejemplo para crear el `.env.docker`.
+2. **Prepara las variables de entorno para Docker:**
+   Copia el archivo de ejemplo para crear el archivo `.env.docker`.
    ```bash
    cp .env.example .env.docker
    ```
-   > **Nota:** Modifica las variables de entorno en `.env.docker` si necesitas cambiar la configuración por defecto de la base de datos, URLs o correos, etc. Especialmente fíjate en las variables de Base de Datos para asegurar que conecten adecuadamente (si el default está en SQLite en el ejemplo, puede que debas configurar credenciales de PostgreSQL de Docker).
+   *Nota: Revisa `.env.docker` si necesitas cambiar contraseñas o puertos por defecto.*
 
-3. **Ejecuta el script de despliegue:**
-   El proyecto incluye un script `deploy.sh` que construye las imágenes, levanta los contenedores, instala dependencias (composer y npm), corre las migraciones y genera la caché.
+3. **Ejecuta el script de despliegue automatizado:**
+   El proyecto incluye un script `deploy.sh` que construirá las imágenes, levantará los contenedores, instalará dependencias, ejecutará migraciones y limpiará cachés.
    ```bash
    chmod +x deploy.sh
    ./deploy.sh
    ```
 
-4. **Crea el usuario administrador:**
-   Una vez que el script finalice (te mostrará que el contenedor está corriendo), crea un usuario para poder acceder al panel de Filament:
+4. **Crea un usuario administrador:**
+   Para poder iniciar sesión en el panel de Filament, necesitas crear un usuario admin. Ejecuta el siguiente comando y sigue las instrucciones en consola:
    ```bash
    docker exec -it midascen_app php artisan make:filament-user
    ```
 
 5. **Accede a la aplicación:**
-   Puedes ingresar a la aplicación web a través de tu navegador:
-   - URL de la aplicación: `http://localhost` (o en la IP del host mostrada por `deploy.sh`).
-   - El panel de administración estará en `http://localhost/admin` (o la ruta que esté configurada para Filament).
+   Abre tu navegador web y visita la IP de tu servidor o `http://localhost`. El panel de administración se encuentra en `http://localhost/admin` (o la ruta configurada).
 
-## 🧰 Comandos útiles
+### Pasos de Instalación (Modo Local Tradicional - Sin Docker)
 
-- Bajar todos los contenedores:
-  ```bash
-  docker compose down
-  ```
-- Ver los logs de la aplicación:
-  ```bash
-  docker compose logs -f app
-  ```
-- Ingresar a la consola del contenedor de la app:
-  ```bash
-  docker exec -it midascen_app /bin/bash
-  ```
+Si prefieres ejecutarlo usando PHP y Composer localmente:
 
----
-*Para más información sobre el Framework base, visita la [Documentación de Laravel](https://laravel.com/docs).*
+1. Clona el repositorio y entra a la carpeta.
+2. Copia `.env.example` a `.env`: `cp .env.example .env`
+3. Instala las dependencias: `composer install` y `npm install`
+4. Genera la key de la app: `php artisan key:generate`
+5. Configura tu base de datos en el archivo `.env` (ej. cambia a SQLite, MySQL, o Postgres).
+6. Ejecuta las migraciones: `php artisan migrate`
+7. Compila los assets: `npm run build`
+8. Crea el usuario admin: `php artisan make:filament-user`
+9. Inicia el servidor de desarrollo: `php artisan serve`
+
+## Capturas de pantalla o demo
+
+> *(Añade aquí imágenes de la interfaz del panel de Filament, tablas de dispositivos, formularios de movimientos, etc.)*
+
+*Ejemplo:*
+![Dashboard de Midascen](https://via.placeholder.com/800x400.png?text=Dashboard+de+Midascen+Filament)
+![Gestión de Dispositivos](https://via.placeholder.com/800x400.png?text=Listado+de+Dispositivos)
