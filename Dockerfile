@@ -1,7 +1,7 @@
 # =========================
 # STAGE 1: PHP + COMPOSER (CON EXTENSIONES)
 # =========================
-FROM php:8.4-cli-alpine AS vendor
+FROM node:20 AS frontend
 
 # Instalar dependencias necesarias para intl
 RUN apk add --no-cache \
