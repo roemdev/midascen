@@ -17,6 +17,7 @@ services:
       - "80:80"
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./:/var/www:ro # Opcional para assets estáticos directos
     depends_on:
       - app
     networks:
@@ -24,7 +25,7 @@ services:
     restart: unless-stopped
 
   queue:
-    image: midascen_app  # 🔥 usa la misma imagen ya construida
+    build: . # Docker detectará que es la misma imagen y usará el cache
     container_name: midascen_queue
     command: php artisan queue:work --sleep=3 --tries=3 --timeout=90
     env_file:
