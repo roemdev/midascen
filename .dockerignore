@@ -7,3 +7,5 @@ storage/logs
 storage/framework/cache
 storage/framework/sessions
 storage/framework/views
+# public/build NO está aquí — debe copiarse a la imagen
+# ya que se compila en el host antes del docker build
