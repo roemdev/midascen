@@ -1,20 +1,4 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: midascen_db
-    env_file:
-      - .env.docker
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - midascen_net
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U midascen"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   app:
     build:
       context: .
@@ -22,11 +6,6 @@ services:
     container_name: midascen_app
     env_file:
       - .env.docker
-    volumes:
-      - .:/var/www
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - midascen_net
     restart: unless-stopped
@@ -37,8 +16,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - .:/var/www
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./public:/var/www/public
     depends_on:
       - app
     networks:
@@ -53,17 +32,9 @@ services:
     command: php artisan queue:work --sleep=3 --tries=3
     env_file:
       - .env.docker
-    volumes:
-      - .:/var/www
-    depends_on:
-      db:
-        condition: service_healthy
     networks:
       - midascen_net
     restart: unless-stopped
-
-volumes:
-  pgdata:
 
 networks:
   midascen_net:

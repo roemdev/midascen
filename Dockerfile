@@ -1,37 +1,56 @@
+# =========================
+# STAGE 1: FRONTEND BUILD
+# =========================
+FROM node:20 AS node_builder
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+
+# =========================
+# STAGE 2: PHP APP
+# =========================
 FROM php:8.4-fpm
 
-# 1. Dependencias del sistema
+# Dependencias del sistema
 RUN apt-get update && apt-get install -y \
     git curl zip unzip \
     libpq-dev libzip-dev libpng-dev \
     libonig-dev libxml2-dev libicu-dev \
-    nodejs npm \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Extensiones de PHP
+# Extensiones PHP
 RUN docker-php-ext-install \
     pdo pdo_pgsql pgsql \
     zip gd intl bcmath \
     exif pcntl mbstring \
     xml opcache
 
-# 3. Traer Composer
+# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 4. Configurar directorio de trabajo
 WORKDIR /var/www
 
-# 5. Copiar archivos (Importante: El .dockerignore evitará conflictos)
+# Copiar proyecto
 COPY . .
 COPY .env.docker .env
 
-# 6. Instalación de dependencias (Como root para evitar errores EACCES)
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
-RUN npm ci && npm run build
+# IMPORTANTE: evitar basura del host
+RUN rm -rf node_modules
 
-# 7. AJUSTE FINAL DE PERMISOS
-# Entregamos la propiedad a www-data para que la app funcione correctamente
+# Composer
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# Copiar build del frontend
+COPY --from=node_builder /app/public/build /var/www/public/build
+
+# Permisos
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 storage bootstrap/cache
 
