@@ -1,10 +1,25 @@
 # =========================
-# STAGE 1: DEPENDENCIAS PHP
+# STAGE 1: PHP + COMPOSER (CON EXTENSIONES)
 # =========================
-FROM composer:2 AS vendor
+FROM php:8.4-cli-alpine AS vendor
+
+# Instalar dependencias necesarias para intl
+RUN apk add --no-cache \
+    icu-dev \
+    libzip-dev \
+    oniguruma-dev \
+    git zip unzip
+
+# Instalar extensiones
+RUN docker-php-ext-install intl zip mbstring
+
+# Instalar composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
+
 COPY composer.json composer.lock ./
+
 RUN composer install \
     --no-dev \
     --prefer-dist \
@@ -13,7 +28,7 @@ RUN composer install \
 
 
 # =========================
-# STAGE 2: BUILD FRONTEND
+# STAGE 2: FRONTEND
 # =========================
 FROM node:20-alpine AS frontend
 
@@ -30,16 +45,13 @@ RUN npm run build
 # =========================
 FROM php:8.4-fpm-alpine
 
-# Dependencias mínimas
 RUN apk add --no-cache \
-    bash \
     libpng \
     libzip \
     icu \
     oniguruma \
     postgresql-libs
 
-# Extensiones PHP
 RUN docker-php-ext-install \
     pdo \
     pdo_pgsql \
@@ -48,20 +60,16 @@ RUN docker-php-ext-install \
     bcmath \
     exif \
     pcntl \
-    opcache
+    opcache \
+    intl
 
 WORKDIR /var/www
 
-# Copiar app
 COPY . .
 
-# Copiar vendor ya optimizado
 COPY --from=vendor /app/vendor /var/www/vendor
-
-# Copiar build frontend
 COPY --from=frontend /app/public/build /var/www/public/build
 
-# Permisos correctos
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 storage bootstrap/cache
 
