@@ -1,59 +1,80 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Midascen - Sistema de Gestión de Dispositivos
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## ¿Qué hace midascen?
 
-## About Laravel
+Midascen es una aplicación de gestión de inventario y movimientos de dispositivos diseñada para organizaciones. Permite llevar un control exhaustivo de:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Inventario:** Registro de dispositivos con su número de serie, IMEI, condición, y disponibilidad.
+- **Catalogación:** Organización mediante Marcas, Categorías y Modelos.
+- **Movimientos:** Seguimiento de entradas y salidas de dispositivos para saber qué usuario o destinatario tiene asignado cada equipo.
+- **Administración Inteligente:** Todo gestionado a través de un panel de administración completo e intuitivo basado en Filament.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tecnologías usadas
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Backend:** Laravel 12 (PHP 8.2+)
+- **Panel de Administración:** Filament v3
+- **Base de Datos:** PostgreSQL (en Docker) / SQLite (por defecto en local sin Docker)
+- **Frontend / Assets:** Vite, Tailwind CSS
+- **Infraestructura:** Docker & Docker Compose (Nginx, App, DB, Queue)
 
-## Learning Laravel
+## Cómo instalarlo y configurarlo
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Midascen está preparado para desplegarse fácilmente usando Docker, lo que simplifica la configuración del entorno.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Requisitos Previos
 
-## Laravel Sponsors
+- Git
+- Docker y Docker Compose instalados en tu máquina.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Pasos de Instalación (Con Docker)
 
-### Premium Partners
+1. **Clona el repositorio:**
+   ```bash
+   git clone <URL_DEL_REPOSITORIO> midascen
+   cd midascen
+   ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+2. **Prepara las variables de entorno para Docker:**
+   Copia el archivo de ejemplo para crear el archivo `.env.docker`.
+   ```bash
+   cp .env.example .env.docker
+   ```
+   *Nota: Revisa `.env.docker` si necesitas cambiar contraseñas o puertos por defecto.*
 
-## Contributing
+3. **Ejecuta el script de despliegue automatizado:**
+   El proyecto incluye un script `deploy.sh` que construirá las imágenes, levantará los contenedores, instalará dependencias, ejecutará migraciones y limpiará cachés.
+   ```bash
+   chmod +x deploy.sh
+   ./deploy.sh
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+4. **Crea un usuario administrador:**
+   Para poder iniciar sesión en el panel de Filament, necesitas crear un usuario admin. Ejecuta el siguiente comando y sigue las instrucciones en consola:
+   ```bash
+   docker exec -it midascen_app php artisan make:filament-user
+   ```
 
-## Code of Conduct
+5. **Accede a la aplicación:**
+   Abre tu navegador web y visita la IP de tu servidor o `http://localhost`. El panel de administración se encuentra en `http://localhost/admin` (o la ruta configurada).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Pasos de Instalación (Modo Local Tradicional - Sin Docker)
 
-## Security Vulnerabilities
+Si prefieres ejecutarlo usando PHP y Composer localmente:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. Clona el repositorio y entra a la carpeta.
+2. Copia `.env.example` a `.env`: `cp .env.example .env`
+3. Instala las dependencias: `composer install` y `npm install`
+4. Genera la key de la app: `php artisan key:generate`
+5. Configura tu base de datos en el archivo `.env` (ej. cambia a SQLite, MySQL, o Postgres).
+6. Ejecuta las migraciones: `php artisan migrate`
+7. Compila los assets: `npm run build`
+8. Crea el usuario admin: `php artisan make:filament-user`
+9. Inicia el servidor de desarrollo: `php artisan serve`
 
-## License
+## Capturas de pantalla o demo
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+> *(Añade aquí imágenes de la interfaz del panel de Filament, tablas de dispositivos, formularios de movimientos, etc.)*
+
+*Ejemplo:*
+![Dashboard de Midascen](https://via.placeholder.com/800x400.png?text=Dashboard+de+Midascen+Filament)
+![Gestión de Dispositivos](https://via.placeholder.com/800x400.png?text=Listado+de+Dispositivos)
