@@ -2,28 +2,20 @@
 set -e
 
 echo "=============================="
-echo " Desplegando Midascen"
+echo " Deploy Midascen (PROD)"
 echo "=============================="
 
-# Verificar .env.docker
-if [ ! -f .env.docker ]; then
-    echo "ERROR: No existe .env.docker."
-    exit 1
-fi
-
-echo "[1/4] Bajando contenedores anteriores..."
-docker compose down
-
-echo "[2/4] Construyendo imágenes..."
+echo "[1/3] Build limpio..."
 docker compose build --no-cache
 
-echo "[3/4] Levantando servicios..."
+echo "[2/3] Levantando servicios..."
 docker compose up -d
 
-echo "[4/4] Optimizando Laravel..."
-docker exec midascen_app php artisan optimize:clear
-docker exec midascen_app php artisan optimize
+echo "[3/3] Cacheando Laravel..."
+docker exec midascen_app php artisan config:cache
+docker exec midascen_app php artisan route:cache
+docker exec midascen_app php artisan view:cache
 
 echo ""
 echo "Listo."
-echo "App corriendo en: http://$(hostname -I | awk '{print $1}')"
+echo "URL: http://$(hostname -I | awk '{print $1}')"
