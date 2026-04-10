@@ -9,18 +9,22 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
 # --- ETAPA 2: Frontend (Node.js) ---
-# Usamos Debian (Slim) para evitar errores de socket ENOTCONN en Proxmox/LXC
-FROM node:20-slim AS frontend
+# node:20 (Debian full) es más estable en entornos LXC con restricciones de proceso
+FROM node:20 AS frontend
 WORKDIR /app
+
 RUN npm install -g pnpm
 
-# Copiamos solo lo necesario para instalar dependencias (Cache eficiente)
+# Copiamos solo lo necesario para instalar dependencias (cache eficiente)
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --no-frozen-lockfile
+
+# ESBUILD_BINARY_PATH vacío evita el error ENOTCONN en Proxmox/LXC
+# terser se usa como minificador alternativo al binario nativo de esbuild
+RUN ESBUILD_BINARY_PATH="" pnpm install --no-frozen-lockfile && pnpm add -D terser
 
 # Copiamos el resto y construimos
 COPY . .
-RUN pnpm build
+RUN ESBUILD_BINARY_PATH="" pnpm build
 
 # --- ETAPA 3: Imagen Final (Producción) ---
 FROM php:8.4-fpm-alpine
@@ -36,7 +40,7 @@ COPY . .
 COPY --from=vendor /app/vendor ./vendor
 COPY --from=frontend /app/public/build ./public/build
 
-# Ajuste de permisos profesional
+# Ajuste de permisos
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
