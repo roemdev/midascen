@@ -10,6 +10,43 @@ class DeviceMovementObserver
 {
     public function creating(DeviceMovement $movement): void
     {
+        // -------------------------------------------------------
+        // Validación para ENTRADAS
+        // Impide registrar una entrada si el equipo ya está disponible
+        // -------------------------------------------------------
+        if ($movement->tipo === 'entrada') {
+            $disponibilidad = $movement->device->disponibilidad;
+
+            if ($disponibilidad === 'disponible') {
+                Notification::make()
+                    ->title('Entrada no permitida')
+                    ->body("El equipo {$movement->device->numero_serie} ya está disponible. No puede registrarse una entrada.")
+                    ->danger()
+                    ->send();
+
+                throw ValidationException::withMessages([
+                    'device_id' => 'El equipo ya está disponible, no se puede registrar una entrada.',
+                ]);
+            }
+
+            if ($disponibilidad === 'dado_de_baja') {
+                Notification::make()
+                    ->title('Entrada no permitida')
+                    ->body("El equipo {$movement->device->numero_serie} está dado de baja y no puede recibir movimientos.")
+                    ->danger()
+                    ->send();
+
+                throw ValidationException::withMessages([
+                    'device_id' => 'El equipo está dado de baja y no puede recibir movimientos.',
+                ]);
+            }
+        }
+
+        // -------------------------------------------------------
+        // Validación para SALIDAS
+        // Impide asignar si el ejecutivo ya tiene un equipo
+        // de la misma categoría sin excepción registrada
+        // -------------------------------------------------------
         if ($movement->tipo !== 'salida' || !$movement->recipient_id) {
             return;
         }

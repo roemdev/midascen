@@ -36,9 +36,22 @@ class DeviceMovementResource extends Resource
         return 'heroicon-o-arrows-right-left';
     }
 
+    /**
+     * Formulario de CREACIÓN — permite selección múltiple de equipos.
+     * Este schema lo usa CreateDeviceMovement.
+     */
     public static function form(Schema $schema): Schema
     {
-        return $schema->components([
+        return $schema->components(static::createFormComponents());
+    }
+
+    /**
+     * Componentes del formulario de creación (con device_id múltiple).
+     * Se expone como método público para que CreateDeviceMovement lo reutilice.
+     */
+    public static function createFormComponents(): array
+    {
+        return [
             Select::make('tipo')
                 ->label('Tipo de movimiento')
                 ->options([
@@ -50,7 +63,7 @@ class DeviceMovementResource extends Resource
 
             Select::make('device_id')
                 ->label('Equipos')
-                ->multiple() // Permite selección múltiple
+                ->multiple()
                 ->options(function (Get $get) {
                     $tipo = $get('tipo');
                     if (!$tipo) return [];
@@ -61,8 +74,10 @@ class DeviceMovementResource extends Resource
                             fn ($q) => $q->where('disponibilidad', 'disponible')
                         )
                         ->when(
+                        // Entradas: solo equipos asignados
+                        // (excluye disponible, en_reparacion y dado_de_baja)
                             $tipo === 'entrada',
-                            fn ($q) => $q->whereIn('disponibilidad', ['asignado'])
+                            fn ($q) => $q->where('disponibilidad', 'asignado')
                         )
                         ->get()
                         ->mapWithKeys(fn ($d) => [
@@ -101,7 +116,65 @@ class DeviceMovementResource extends Resource
             TextInput::make('referencia')
                 ->label('Referencia')
                 ->maxLength(100),
-        ]);
+        ];
+    }
+
+    /**
+     * Componentes del formulario de EDICIÓN — device_id es un Select simple,
+     * no múltiple, porque cada registro tiene exactamente un equipo.
+     */
+    public static function editFormComponents(): array
+    {
+        return [
+            Select::make('tipo')
+                ->label('Tipo de movimiento')
+                ->options([
+                    'entrada' => 'Entrada',
+                    'salida'  => 'Salida',
+                ])
+                ->required()
+                ->live(),
+
+            Select::make('device_id')
+                ->label('Equipo')
+                ->options(function () {
+                    return Device::with('deviceModel.brand')
+                        ->get()
+                        ->mapWithKeys(fn ($d) => [
+                            $d->id => "{$d->deviceModel->brand->nombre} {$d->deviceModel->nombre} — {$d->numero_serie}"
+                        ]);
+                })
+                ->searchable()
+                ->required()
+                ->disabled() // No tiene sentido cambiar el equipo al editar
+                ->helperText('El equipo no puede cambiarse una vez registrado el movimiento.'),
+
+            Select::make('recipient_id')
+                ->label('Ejecutivo destinatario')
+                ->relationship('recipient', 'nombre')
+                ->searchable()
+                ->preload()
+                ->visible(fn (Get $get): bool => $get('tipo') === 'salida'),
+
+            DatePicker::make('fecha_entrega')
+                ->label('Fecha de entrega')
+                ->required()
+                ->displayFormat('d/m/Y'),
+
+            DatePicker::make('fecha_devolucion')
+                ->label('Fecha de devolución')
+                ->displayFormat('d/m/Y')
+                ->visible(fn (Get $get): bool => $get('tipo') === 'salida')
+                ->after('fecha_entrega'),
+
+            TextInput::make('motivo')
+                ->label('Motivo')
+                ->maxLength(255),
+
+            TextInput::make('referencia')
+                ->label('Referencia')
+                ->maxLength(100),
+        ];
     }
 
     public static function table(Table $table): Table
