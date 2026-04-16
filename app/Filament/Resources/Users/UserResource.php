@@ -66,9 +66,10 @@ class UserResource extends Resource
                     'admin'        => 'Administrador',
                     'registrador'  => 'Registrador',
                     'despachador'  => 'Despachador',
+                    'observador'  => 'Observador',
                 ])
                 ->required()
-                ->default('registrador'),
+                ->default('observador'),
 
             Toggle::make('activo')
                 ->label('Activo')
@@ -97,6 +98,7 @@ class UserResource extends Resource
                         'admin'       => 'danger',
                         'registrador' => 'info',
                         'despachador' => 'warning',
+                        'observador' => 'blue',
                         default       => 'gray',
                     }),
 
@@ -117,6 +119,7 @@ class UserResource extends Resource
                         'admin'       => 'Administrador',
                         'registrador' => 'Registrador',
                         'despachador' => 'Despachador',
+                        'observador' => 'Observador',
                     ]),
             ])
             ->actions([
