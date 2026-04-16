@@ -7,18 +7,14 @@ use App\Models\User;
 
 class DevicePolicy
 {
-    // Admin puede todo
-    // Registrador puede ver, crear, y editar solo sus propios equipos
-    // Despachador solo puede ver
-
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ["admin", "registrador", "despachador"]);
+        return in_array($user->role, ["admin", "registrador", "despachador", "observador"]);
     }
 
     public function view(User $user, Device $device): bool
     {
-        return in_array($user->role, ["admin", "registrador", "despachador"]);
+        return in_array($user->role, ["admin", "registrador", "despachador", "observador"]);
     }
 
     public function create(User $user): bool

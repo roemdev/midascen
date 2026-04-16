@@ -9,12 +9,12 @@ class CategoryPolicy
 {
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ["admin", "registrador"]);
+        return in_array($user->role, ["admin", "registrador", "observador"]);
     }
 
     public function view(User $user, Category $category): bool
     {
-        return in_array($user->role, ["admin", "registrador"]);
+        return in_array($user->role, ["admin", "registrador", "observador"]);
     }
 
     public function create(User $user): bool

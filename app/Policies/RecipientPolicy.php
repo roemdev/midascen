@@ -9,12 +9,12 @@ class RecipientPolicy
 {
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ["admin", "despachador"]);
+        return in_array($user->role, ["admin", "despachador", "observador"]);
     }
 
     public function view(User $user, Recipient $recipient): bool
     {
-        return in_array($user->role, ["admin", "despachador"]);
+        return in_array($user->role, ["admin", "despachador", "observador"]);
     }
 
     public function create(User $user): bool

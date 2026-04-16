@@ -9,12 +9,12 @@ class DeviceMovementPolicy
 {
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ["admin", "registrador", "despachador"]);
+        return in_array($user->role, ["admin", "registrador", "despachador", "observador"]);
     }
 
     public function view(User $user, DeviceMovement $movement): bool
     {
-        return in_array($user->role, ["admin", "registrador", "despachador"]);
+        return in_array($user->role, ["admin", "registrador", "despachador", "observador"]);
     }
 
     public function create(User $user): bool

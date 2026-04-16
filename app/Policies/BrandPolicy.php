@@ -9,12 +9,12 @@ class BrandPolicy
 {
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ["admin", "registrador"]);
+        return in_array($user->role, ["admin", "registrador", "observador"]);
     }
 
     public function view(User $user, Brand $brand): bool
     {
-        return in_array($user->role, ["admin", "registrador"]);
+        return in_array($user->role, ["admin", "registrador", "observador"]);
     }
 
     public function create(User $user): bool
